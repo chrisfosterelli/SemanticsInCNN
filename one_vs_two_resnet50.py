@@ -1,8 +1,8 @@
 import numpy as np
 from scipy.stats.stats import pearsonr
 import sys
-#import resnet50
-import inception_v3
+import resnet50
+#import inception_v3
 #import vgg16
 from sklearn.externals import joblib
 import matplotlib.pyplot as plt
@@ -34,7 +34,7 @@ import keras.backend as K
 from keras.utils import layer_utils
 from keras.utils.data_utils import get_file
 from keras.applications.imagenet_utils import decode_predictions
-#from keras.applications.imagenet_utils import preprocess_input
+from keras.applications.imagenet_utils import preprocess_input
 from keras.applications.imagenet_utils import _obtain_input_shape
 from keras.engine.topology import get_source_inputs
 from Activations import *
@@ -46,16 +46,16 @@ import time
 from shutil import copyfile
 
 from random import shuffle
-
+"""
 def preprocess_input(x):
     x /= 255.
     x -= 0.5
     x *= 2.
     return x
 
-
+"""
 def get_act_vector(path,model,layer):
-    img = image.load_img(path, target_size=(299, 299))
+    img = image.load_img(path, target_size=(224, 224))
     x = image.img_to_array(img)
     x = np.expand_dims(x, axis=0)
     x = preprocess_input(x)
@@ -80,7 +80,7 @@ def get_act_vector(path,model,layer):
 
 #Lets load the correct predicted and wrong predicted vocabulary
 
-[correct,predictions]= joblib.load('./inceptionv3_predictions.pkl')
+[correct,predictions]= joblib.load('./resnet50_predictions.pkl')
 random.seed(12345)
 vocab = joblib.load("./vocabSkipGram.pkl")
 paths=joblib.load("./lpath1.pkl")
@@ -112,7 +112,7 @@ misclassified_word=misclassified_word[0:len(predictions)]
 
 
 #Get the activations for incorrect 
-model = inception_v3.InceptionV3(include_top=True, weights='imagenet')
+model = resnet50.ResNet50(include_top=True, weights='imagenet')
 layer=str(sys.argv[1])
 print ("The passed layer is: ",layer)
 correct_cnn_vector=[]
@@ -202,7 +202,7 @@ for i in range(len(incorrect)):
 print ("One vs Two results for layer ",layer,"_", " is ",str(passed)," out of ", str(total) )
 
 #Now dump the store which has the actual correlations, might be useful for more results.
-lib ="./OneVsTwo/inceptionV3_"+layer+"_stored.pkl"
+lib ="./OneVsTwo/resnet50_"+layer+"_stored.pkl"
 joblib.dump([passed,total,store],lib)
 actual_total = total
 actual_passed = passed
@@ -237,7 +237,7 @@ print ("Permutation tests completed")
 
 print ("One vs Two results for layer ",layer,"_", " is ",str(actual_passed)," out of ", str(actual_total))	
 
-lib ="./OneVsTwo/inceptionV3_"+layer+"_permutation.pkl"
+lib ="./OneVsTwo/resnet50_"+layer+"_permutation.pkl"
 joblib.dump(permutation_score.sort(),lib)
 
 

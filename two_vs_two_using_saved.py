@@ -166,7 +166,7 @@ def run_test(obj,cnn_mat):
 	
 	return score
 word_vec_in='./wordvectors/'
-"""
+
 input_file_list =['Global_context_553.txt','Skip_gram_corrected_553.txt','RNN_553.txt','Cross_lingual_553.txt','glove_553.txt','Non-Distributional_553.txt']
 word_vector_objects=[]
 for j in range(5):
@@ -175,7 +175,7 @@ for j in range(5):
 	print (output['length'])
 	word_vector_objects.append(output)
 joblib.dump(word_vector_objects,'word_vector_objects.pkl')
-"""
+
 word_vector_objects=joblib.load('./word_vector_objects.pkl')
 #The below are for VGG16
 

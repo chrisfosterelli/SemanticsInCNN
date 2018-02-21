@@ -197,14 +197,14 @@ def get_matrix_and_mask(vector_file):
 		word = word.lower()										
 		if word in dictionary: 
 			if word not in added_word:						
-				input_words[word] = (map(float, tokens))
+				input_words[word] = list(map(float, tokens))
 				added_word[word] = 0
 	#print len(dictionary)
 	# find words that is in dictionary but not in the input, record their indexs for making a mask
 	for i, line in enumerate(vocab):
 		if line not in input_words: 
 			unavailable.append(i) 
-	keylist = input_words.keys()
+	keylist = list(input_words.keys())
 	keylist.sort()
 	for key in keylist:
 	    word_vector.append(input_words[key])
@@ -321,7 +321,18 @@ path_list.append(joblib.load("./path4.pkl"))
 path_list.append(joblib.load("./path5.pkl"))
 #word_vector_objects=joblib.load("/Users/Dhanush/Desktop/Projects/CNNSTUDYDOCS/Pickels/word_vectors.pkl")
 
+word_vec_in='./wordvectors/'
 
+input_file_list =['Global_context_553.txt','Skip_gram_corrected_553.txt','RNN_553.txt','Cross_lingual_553.txt','glove_553.txt','Non-Distributional_553.txt']
+word_vector_objects=[]
+for j in range(5):
+	input_vec = word_vec_in +str(input_file_list[j])
+	output=get_matrix_and_mask(open(input_vec,'r'))
+	print (output['length'])
+	word_vector_objects.append(output)
+joblib.dump(word_vector_objects,'word_vector_objects.pkl')
+
+word_vector_objects=joblib.load('./word_vector_objects.pkl')
 
 
 
@@ -332,21 +343,23 @@ path_list.append(joblib.load("./path5.pkl"))
 network ='vgg16'
 
 #,
-#layers =['block1_conv1','block2_conv1','block3_conv1','block3_conv3','block4_conv1','block4_conv3','block5_conv1','block5_conv3','fc1','fc2']
+layers =['block1_conv1','block1_conv2','block2_conv1','block2_conv2','block3_conv1','block3_conv2','block3_conv3','block4_conv1','block4_conv2','block4_conv3','block5_conv1','block5_conv2','block5_conv3','fc1','fc2']
 z=0
 test_scores =[]
 ADUMP=[]
 BDUMP=[]
 CDUMP=[]
-layers=[str(sys.argv[1])]
-print ("The passed argument is: ")
-print (layers)
+#layers=[str(sys.argv[1])]
+#print ("The passed argument is: ")
+#print (layers)
 for layer in layers:
 	print ("vgg16"," ",layer)
 	print ("processing activations at" + str(time.time()) +".....")
-	model = vgg16.VGG16(include_top=True, weights='imagenet')
+	
+	#model = vgg16.VGG16(include_top=True, weights='imagenet')
 
 	for i in range(5):
+		"""
 		paths = path_list[i];print (i);
 		CNN_vector = []
 		ww=0
@@ -376,7 +389,8 @@ for layer in layers:
 		name = 'vgg16_'+layer+'_'+str(i)+'.npy'
 		joblib.dump(input_mat,"/home/dhanushd/vgg16dump/"+name)
 		"""
-		input_mat=joblib.load("/Users/Dhanush/Desktop/dump/"+name)
+		name = 'vgg16_'+layer+'_'+str(i)+'.npy'
+		input_mat=joblib.load("/Volumes/LLL/2vs2_cnn_data/vgg16dump/"+name)
 		input_file_list =['Skip_gram','RNN','Cross_lingual','glove']#,'Non-Distributional']
 		for j in range(4):
 			score,aa,bb,cc=run_test(word_vector_objects[j],input_mat)
@@ -389,9 +403,9 @@ for layer in layers:
 			ADUMP.append(aa)
 			BDUMP.append(bb)
 			CDUMP.append(cc)
-			test_scores.append([network,z,layer,input_file_list[j],score])
+			#test_scores.append([network,z,layer,input_file_list[j],score])
 			#print (aa,bb,cc)
-		"""
+		
 
 	#z= z+1
 
@@ -400,7 +414,8 @@ for layer in layers:
 #joblib.dump(ADUMP,"/home/dhanushd/dump/vgg16_parta.pkl")
 #joblib.dump(BDUMP,"/home/dhanushd/dump/vgg16_partb.pkl")
 #joblib.dump(CDUMP,"/home/dhanushd/dump/vgg16_diff.pkl")
-joblib.dump(ADUMP,"/Users/Dhanush/Desktop/vgg16_parta.pkl")
-joblib.dump(BDUMP,"/Users/Dhanush/Desktop/vgg16_partb.pkl")
 """
+joblib.dump(ADUMP,"./vgg16_parta.pkl")
+joblib.dump(BDUMP,"./vgg16_partb.pkl")
+
 		
