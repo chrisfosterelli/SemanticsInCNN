@@ -81,9 +81,8 @@ def get_act_vector(path,model,layer):
 #Lets load the correct predicted and wrong predicted vocabulary
 
 [correct,predictions]= joblib.load('./inceptionv3_predictions.pkl')
-random.seed(12345)
 vocab = joblib.load("./vocabSkipGram.pkl")
-paths=joblib.load("./lpath1.pkl")
+paths=joblib.load("./lpath3.pkl")
 correct.sort()
 print (correct)
 #Lets load the word vectors for using in this test.
@@ -106,8 +105,6 @@ misclassified_word =[]
 for item in predictions:
 	incorrect.append(item)
 	misclassified_word.append(predictions[item][0])
-incorrect=incorrect[0:len(predictions)]
-misclassified_word=misclassified_word[0:len(predictions)]
 #We need to get the activations for the Correct words as well
 
 
@@ -220,6 +217,9 @@ for i in range(1000):
 	passed=0
 	total=0
 	np.random.shuffle(correct_class_correlation_matrix)
+	#np.random.shuffle(correct_class_correlation_matrix.T)
+	np.random.shuffle(wrong_class_correlation_matrix)
+	#np.random.shuffle(wrong_class_correlation_matrix.T)
 
 	for i in range(len(incorrect)):
 		total+=1
@@ -234,13 +234,13 @@ for i in range(1000):
 	print ("Passed: " + str(passed)+" total: " + str(total) + " Score: " + str(passed/float(total)))
 
 print ("Permutation tests completed")
-
 print ("One vs Two results for layer ",layer,"_", " is ",str(actual_passed)," out of ", str(actual_total))	
 
 lib ="./OneVsTwo/inceptionV3_"+layer+"_permutation.pkl"
-joblib.dump(permutation_score.sort(),lib)
+joblib.dump(permutation_score,lib)
 
 
 permutation_score.sort()
 
 print (permutation_score[951:])
+print ("Correct program")

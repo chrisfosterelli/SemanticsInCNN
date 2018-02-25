@@ -295,8 +295,8 @@ def two_vs_two (input_mat, brain_mat, length):
 				Diff.append(part_a - part_b)
 				s += 1		
 
-	print (total)
-	raise Exception("")
+
+
 	return s/float(total),PartA,PartB,Diff
 
 
@@ -390,7 +390,7 @@ for layer in layers:
 		joblib.dump(input_mat,"/home/dhanushd/vgg16dump/"+name)
 		"""
 		name = 'vgg16_'+layer+'_'+str(i)+'.npy'
-		input_mat=joblib.load("/Volumes/LLL/2vs2_cnn_data/vgg16dump/"+name)
+		input_mat=joblib.load("/home/dhanushd/vgg16dump/"+name)
 		input_file_list =['Skip_gram','RNN','Cross_lingual','glove']#,'Non-Distributional']
 		for j in range(4):
 			score,aa,bb,cc=run_test(word_vector_objects[j],input_mat)

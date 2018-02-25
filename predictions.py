@@ -4,8 +4,8 @@ import numpy as np
 from scipy.stats.stats import pearsonr
 import sys
 #import resnet50
-#import inception_v3
-import vgg16
+import inception_v3
+#import vgg16
 from sklearn.externals import joblib
 import matplotlib.pyplot as plt
 import numpy as np
@@ -36,7 +36,7 @@ import keras.backend as K
 from keras.utils import layer_utils
 from keras.utils.data_utils import get_file
 from keras.applications.imagenet_utils import decode_predictions
-from keras.applications.imagenet_utils import preprocess_input
+#from keras.applications.imagenet_utils import preprocess_input
 from keras.applications.imagenet_utils import _obtain_input_shape
 from keras.engine.topology import get_source_inputs
 from Activations import *
@@ -48,12 +48,12 @@ import time
 from shutil import copyfile
 from random import shuffle
 
-vocab=joblib.load('/Users/Dhanush/Desktop/Cnn2Word2Vec/vocabSkipGram.pkl')
+vocab=joblib.load('/Users/Dhanush/Desktop/Cnn2Word2Vec/vocabSkipGram1.pkl')
 vocab.sort()
 print ("Total SkipGram Vocabulary is : ", len(vocab))
 
 mapping =joblib.load('ImagenetMapping.pkl')
-print (mapping['army tank'])
+#print (mapping['army tank'])
 
 reverse_mapping ={}
 
@@ -69,20 +69,20 @@ for item in mapping:
 
 #It stores the top 200 wrong predictions with its original predictions if :
 #if the predicted new word is not in the reserved vocab but in 738 remaining words of word2vec.
-"""
+
 def preprocess_input(x):
     x /= 255.
     x -= 0.5
     x *= 2.
     return x
-"""
+
 #Load the vocabulary of 838 concepts
 
 
 #Load the models
-model = vgg16.VGG16(include_top=True, weights='imagenet')
+#model = vgg16.VGG16(include_top=True, weights='imagenet')
 #model = resnet50.ResNet50(include_top=True, weights='imagenet')
-#model = inception_v3.InceptionV3(include_top=True, weights='imagenet')
+model = inception_v3.InceptionV3(include_top=True, weights='imagenet')
 #Load the image paths, use only first image out of 5 (lpath1)
 paths =joblib.load('/Users/Dhanush/Desktop/Cnn2Word2Vec/lpath1.pkl')
 print ("Total number of images is ",len(paths))
@@ -93,7 +93,7 @@ correct_predictions =[]
 for i in range(len(paths)):
 	if vocab[i] in skip:
 		continue
-	img = image.load_img(paths[i], target_size=(224, 224))
+	img = image.load_img(paths[i], target_size=(299, 299))
 	x = image.img_to_array(img)
 	x = np.expand_dims(x, axis=0)
 	x = preprocess_input(x)
@@ -102,8 +102,9 @@ for i in range(len(paths)):
 	topprediction= out[0][1].lower().strip().replace("-"," ")
 	topprediction=topprediction.replace("_"," ")
 	#print (topprediction)
-	print (vocab[i],topprediction)
-	if mapping[topprediction]==mapping[vocab[i]]: #It got this correct
+	#print (vocab[i],topprediction)
+	#print (mapping[topprediction][0],mapping[vocab[i]][0])
+	if mapping[topprediction][0]==mapping[vocab[i]][0]: #It got this correct
 		correct_predictions.append(mapping[topprediction][0])
 		correct+=1
 		continue
@@ -132,7 +133,7 @@ for i in range(len(paths)):
 		#print ("correct_predictions word... Skipping")
 		continue
 
-	img = image.load_img(paths[i], target_size=(224, 224))
+	img = image.load_img(paths[i], target_size=(299, 299))
 	x = image.img_to_array(img)
 	x = np.expand_dims(x, axis=0)
 	x = preprocess_input(x)
@@ -172,7 +173,7 @@ selected_correct_predictions=temp
 selected_correct_predictions=list(set(selected_correct_predictions))
 print (len(selected_correct_predictions))
 
-joblib.dump([selected_correct_predictions,predictions],'vgg16_predictions.pkl')
+joblib.dump([selected_correct_predictions,predictions],'inceptionv3_predictions.pkl')
 
 
 

@@ -46,9 +46,14 @@ import time
 from shutil import copyfile
 
 from random import shuffle
+"""
+def preprocess_input(x):
+    x /= 255.
+    x -= 0.5
+    x *= 2.
+    return x
 
-
-
+"""
 def get_act_vector(path,model,layer):
     img = image.load_img(path, target_size=(224, 224))
     x = image.img_to_array(img)
@@ -76,12 +81,10 @@ def get_act_vector(path,model,layer):
 #Lets load the correct predicted and wrong predicted vocabulary
 
 [correct,predictions]= joblib.load('./vgg16_predictions.pkl')
-
 vocab = joblib.load("./vocabSkipGram.pkl")
-paths=joblib.load("./lpath1.pkl")
-shuffle(correct)
-correct= correct[0:100]
+paths=joblib.load("./lpath2.pkl")
 correct.sort()
+print (correct)
 #Lets load the word vectors for using in this test.
 skipgram=joblib.load('./wordvectors/Skip_gram_corrected_838.pkl')
 
@@ -94,7 +97,6 @@ correct_skipgram = []
 
 for concept in correct:
 	correct_skipgram.append(skipgram[concept])
-
 correct_skipgram_vector=np.array(correct_skipgram)
 #Now we have the correct skipgram vectors
 print ("Done with correct Skipgram vector  and its shape is: ",correct_skipgram_vector.shape)
@@ -103,8 +105,8 @@ misclassified_word =[]
 for item in predictions:
 	incorrect.append(item)
 	misclassified_word.append(predictions[item][0])
-incorrect=incorrect[0:len(predictions)]
-misclassified_word=misclassified_word[0:len(predictions)]
+print (len(predictions))
+print (len(incorrect))
 #We need to get the activations for the Correct words as well
 
 
@@ -136,7 +138,7 @@ for i in range(len(paths)):
 	incorrect_cnn_vectors.append(vec)
 #Now we have all the incorrect cnn vectors.
 print ("We have all the incorrect cnn vectors and its length is: ", len(incorrect_cnn_vectors))
-
+incorrect_cnn_vectors=np.array(incorrect_cnn_vectors)
 length=correct_cnn_vector.shape[0]
 #Get the pearson correlations of the incorrect cnn vectors with the correct cnn vectors
 #resulting in 150 * 100 correlation matrix
@@ -150,19 +152,24 @@ for i in range(len(incorrect)):
 		vector1 = correct_cnn_vector[word1]
 		input_mat[0][word1]=pearsonr(vector1, vector2)[0]
 	cnn_correlation_matrix.append(input_mat)
+cnn_correlation_matrix=np.array(cnn_correlation_matrix)
 print ("We have the cnn correlation matrix and its length is: ", len(cnn_correlation_matrix))
+
+joblib.dump(cnn_correlation_matrix,"cnn_correlation_matrix.pkl")
 
 correct_class_correlation_matrix=[]
 
 for i in range(len(incorrect)):
 	input_mat = np.empty((1,length))
 	input_mat.fill(0)
-	vector2=np.array(list(skipgram[incorrect[i]]))
+	vector2=np.array(skipgram[incorrect[i]])
 	for word1 in range (0,length):
 		vector1 = correct_skipgram_vector[word1]
 		input_mat[0][word1]=pearsonr(vector1, vector2)[0]
 	correct_class_correlation_matrix.append(input_mat)
 print ("We have the correct class skipgram correlation matrix and its length is: ", len(correct_class_correlation_matrix))
+correct_class_correlation_matrix=np.array(correct_class_correlation_matrix)
+joblib.dump(correct_class_correlation_matrix,"correct_class_correlation_matrix.pkl")
 
 wrong_class_correlation_matrix =[]
 for i in range(len(incorrect)):
@@ -173,17 +180,15 @@ for i in range(len(incorrect)):
 		vector1 = correct_skipgram_vector[word1]
 		input_mat[0][word1]=pearsonr(vector1, vector2)[0]
 	wrong_class_correlation_matrix.append(input_mat)
+wrong_class_correlation_matrix=np.array(wrong_class_correlation_matrix)
 print ("We have the incorrect prediction skipgram correlation matrix and its length is: ", len(wrong_class_correlation_matrix))
-
+joblib.dump(wrong_class_correlation_matrix,"wrong_class_correlation_matrix.pkl")
 
 
 #Computationally expensive steps are all completed by now
 passed=0
 total=0
 store= []
-correct_class_correlation_matrix=np.array(correct_class_correlation_matrix)
-wrong_class_correlation_matrix=np.array(wrong_class_correlation_matrix)
-cnn_correlation_matrix=np.array(cnn_correlation_matrix)
 for i in range(len(incorrect)):
 	total+=1
 	correct_class_corr_wv = correct_class_correlation_matrix[i]
@@ -210,38 +215,16 @@ actual_score= passed/float(total)
 #Computations required to calculate correlation matrices.
 #cnn_correlation_matrix
 #Lets create a copy of wordvectors
-correct_skipgram_vector_copy = correct_skipgram_vector
 permutation_score=[]
 for i in range(1000):
 	print ('--------------------------------------------------------------')
 	print ("This is the permutation test iteration: ",str(i+1))
-	correct_skipgram_vector_copy = correct_skipgram_vector
-	shuffle(correct_skipgram_vector_copy)
-
-	correct_class_correlation_matrix=[]
-	for i in range(len(incorrect)):
-		input_mat = np.empty((1,length))
-		input_mat.fill(0)
-		vector2=np.array(list(skipgram[incorrect[i]]))
-		for word1 in range (0,length):
-			vector1 = correct_skipgram_vector_copy[word1]
-			input_mat[0][word1]=pearsonr(vector1, vector2)[0]
-		correct_class_correlation_matrix.append(input_mat)
-
-	wrong_class_correlation_matrix =[]
-	for i in range(len(incorrect)):
-		input_mat = np.empty((1,length))
-		input_mat.fill(0)
-		vector2=np.array(skipgram[misclassified_word[i]])
-		for word1 in range (0,length):
-			vector1 = correct_skipgram_vector_copy[word1]
-			input_mat[0][word1]=pearsonr(vector1, vector2)[0]
-		wrong_class_correlation_matrix.append(input_mat)
-
 	passed=0
 	total=0
-	correct_class_correlation_matrix=np.array(correct_class_correlation_matrix)
-	wrong_class_correlation_matrix=np.array(wrong_class_correlation_matrix)
+	np.random.shuffle(correct_class_correlation_matrix)
+	#np.random.shuffle(correct_class_correlation_matrix.T)
+	np.random.shuffle(wrong_class_correlation_matrix)
+	#np.random.shuffle(wrong_class_correlation_matrix.T)
 
 	for i in range(len(incorrect)):
 		total+=1
@@ -249,20 +232,19 @@ for i in range(1000):
 		incorrect_class_corr_wv=wrong_class_correlation_matrix[i]
 		cnn_act_corr= cnn_correlation_matrix[i]
 		actual_class_correlation=pearsonr(cnn_act_corr[0],correct_class_corr_wv[0])[0]
-		wrong_class_correlation=pearsonr(cnn_act_corr[0],incorrect_class_corr_wv[0])[0]
+		wrong_class_correlation=pearsonr(cnn_act_corr[0],incorrect_class_corr_wv[0])[0]			
 		if actual_class_correlation > wrong_class_correlation:
 			passed+=1
 	permutation_score.append(passed/float(total))
 	print ("Passed: " + str(passed)+" total: " + str(total) + " Score: " + str(passed/float(total)))
-print ("Permutation tests completed")
 
+print ("Permutation tests completed")
 
 print ("One vs Two results for layer ",layer,"_", " is ",str(actual_passed)," out of ", str(actual_total))	
 
-lib ="./OneVsTwo/vgg16_"+layer+"_permutation.pkl"  
-joblib.dump(permutation_score.sort(),lib)
+lib ="./OneVsTwo/vgg16_"+layer+"_permutation.pkl"
+joblib.dump(permutation_score,lib)
 
 
 permutation_score.sort()
 
-print (permutation_score[951:])
