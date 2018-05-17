@@ -21,7 +21,8 @@ CLASS_INDEX_PATH = 'https://s3.amazonaws.com/deep-learning-models/' + \
                    'image-models/imagenet_class_index.json'
 
 ATTACK_PARAMS = {
-    'eps': 8.0 / 255.0,
+    'eps': 0.3,
+    'nb_iter': 20,
     'clip_min': -1.,
     'clip_max': 1.
 }
@@ -47,9 +48,6 @@ def preprocess_input(x):
 def postprocess_input(x):
     """ Undo the preprocessing in preprocess_input to get an image back """
     return (x + 1.) * 127.5
-
-def adversarial_attack(x, target):
-    """ Take an input x and generate an adversarial x """
 
 def save_adv(attack, source, dest, target):
     """ Load an image and save an adversarial image """
@@ -92,7 +90,7 @@ if __name__ == '__main__':
             target_class_i = imagenet_map[target_class]
             src_dir_path = join(args.source_images, source_class)
             dst_dir_path = join(args.output_images, source_class, target_class)
-            image_filenames = [ fpath for fpath in os.listdir(src_dir_path) ]
+            image_filenames = [ fname for fname in os.listdir(src_dir_path) ]
             for filename in image_filenames:
                 src_path = join(src_dir_path, filename)
                 dst_path = join(dst_dir_path, filename)
