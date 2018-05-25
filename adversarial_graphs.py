@@ -33,7 +33,8 @@ if __name__ == '__main__':
     results = np.loadtxt(results, delimiter="\t", skiprows=1)
 
     sns.set()
-    sns.set(font_scale=1.1)
+    sns.set(font_scale=1.5)
+    sns.set_palette('plasma')
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 8), sharey=True)
 
     layer_labels = [
@@ -47,19 +48,19 @@ if __name__ == '__main__':
         'Less similar', 'Least similar', 'Average'
     )
 
+    l1, = ax1.plot(results[:, 0])
+    l2, = ax1.plot(results[:, 1])
+    l3, = ax1.plot(results[:, 2])
+    l4, = ax1.plot(results[:, 3])
+    l5, = ax1.plot(results[:, 4])
+    l6, = ax1.plot(results[:, 5])
+    l7, = ax2.plot(np.average(results, axis=1), linestyle='--')
     ticks = list(range(len(layer_labels)))
-    l1, = ax1.plot(results[:, 0], label='Most similar')
-    l2, = ax1.plot(results[:, 1], label='More similar')
-    l3, = ax1.plot(results[:, 2], label='Mildly similar')
-    l4, = ax1.plot(results[:, 3], label='Somewhat similar')
-    l5, = ax1.plot(results[:, 4], label='Less similar')
-    l6, = ax1.plot(results[:, 5], label='Least similar')
-    l7, = ax2.plot(np.average(results, axis=1), linestyle='--', label='Average')
     lines = (l1, l2, l3, l4, l5, l6, l7)
 
     ax1.set_xticks(ticks)
     ax1.set_xticklabels(layer_labels, rotation=45)
-    ax1.set_ylabel('1 vs 2 Accuracy', labelpad=7.5)
+    ax1.set_ylabel('1 vs 2 Accuracy', labelpad=4.0, fontsize=20)
     ax1.axhline(y=0.50, color='#999999', linestyle=':')
 
     ax2.set_xticks(ticks)
@@ -67,8 +68,8 @@ if __name__ == '__main__':
     ax2.axhline(y=0.50, color='#999999', linestyle=':')
     plt.tick_params(axis='y', labelleft=False, labelright=True)
 
-    fig.legend(lines, line_labels, ncol=7, bbox_to_anchor=(0.83, 0.935))
+    fig.legend(lines, line_labels, ncol=7, bbox_to_anchor=(0.974, 0.945))
     plt.suptitle('Adversarial 1 vs 2 Accuracy Through Layers of InceptionV3')
-    plt.subplots_adjust(wspace=0.03, left=0.05, right=0.95)
+    plt.subplots_adjust(wspace=0.03, left=0.045, right=0.955)
     plt.savefig('adversarial.png')
     plt.show()
